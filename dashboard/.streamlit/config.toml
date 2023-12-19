@@ -1,16 +1,16 @@
 [theme]
-# Warna utama untuk elemen interaktif.
-primaryColor = "#7792E3"
+# Primary accent color for interactive elements.
+primaryColor = "#F1C40F"
 
-# Warna latar belakang untuk area konten utama.
-backgroundColor = "#FFFFFF"
+# Background color for the main content area.
+backgroundColor = "#00172B"
 
-# Warna latar belakang yang digunakan untuk sidebar dan sebagian besar widget interaktif.
-secondaryBackgroundColor = "#F0F0F0"
+# Background color used for the sidebar and most interactive widgets.
+secondaryBackgroundColor = "#0083B8"
 
-# Warna yang digunakan untuk hampir semua teks.
-textColor = "#000000"
+# Color used for almost all text.
+textColor = "#FFF"
 
-# Jenis huruf untuk semua teks dalam aplikasi, kecuali blok kode. Salah satu dari "sans serif", "serif", atau "monospace".
+# Font family for all text in the app, except code blocks. One of "sans serif", "serif", or "monospace".
 # Default: "sans serif"
 font = "sans serif"

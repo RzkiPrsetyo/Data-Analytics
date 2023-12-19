@@ -2,150 +2,98 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
+my_df = pd.read_csv('https://raw.githubusercontent.com/RzkiPrsetyo/Data-Analytics/main/dashboard/main_data.csv')
+df = my_df[['year', 'month', 'day','hour','PM2.5','PM10','CO','O3','TEMP','PRES','DEWP','station']]
+df['date'] = df['day'].astype(str) + '/' + df['month'].astype(str) + '/' + df['year'].astype(str)
 
-# Load data
-my_df = pd.read_csv('https://raw.githubusercontent.com/reaperizy/csv/main/Dicoding%20CSV/main_data.csv')
-df = my_df[['year', 'month', 'day', 'hour', 'PM2.5', 'PM10', 'CO', 'O3', 'TEMP', 'PRES', 'DEWP', 'station']]
-df['date'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
+st.set_page_config(page_title="Air Quality Dashboard",
+                   page_icon="bar_chart:",
+                   layout="wide")
 
-# Set page configuration
-st.set_page_config(
-    page_title="Air Quality Index",
-    # page_icon=":bar_chart:",
-    layout="wide"
-)
 
-# Sidebar
-st.sidebar.image("https://teamnepalac.com.np/wp-content/uploads/2021/03/aqi.png")
+# ----- SIDEBAR ------
+# st.sidebar.image("https://hlassets.paessler.com/common/files/graphics/iot/sub-visual_iot-monitoring_air-quality-monitoring-v1.png")
+
 st.sidebar.header("Filter:")
-
-# Temperature filter
-temp_filter = st.sidebar.slider(
-    "Temperature °C:",
-    min_value=df["TEMP"].min(),
-    max_value=df["TEMP"].max(),
-)
-
-# Station filter
 st_filter = st.sidebar.multiselect(
     "Station:",
     options=df["station"].unique(),
     default=df["station"].unique()
 )
 
-# Year filter
 year_filter = st.sidebar.multiselect(
     "Year:",
     options=df["year"].unique(),
     default=df["year"].unique()
 )
 
-# Apply filters
-df_selection = df.query("station == @st_filter & year == @year_filter & TEMP >= @temp_filter")
-
-# Main page
-st.title(":bar_chart: Air Quality Dashboard")
-
-# Display selected filters
-st.sidebar.markdown("### Selected Filters:")
-st.sidebar.markdown(f"**Station(s):** {', '.join(st_filter)}")
-st.sidebar.markdown(f"**Year(s):** {', '.join(map(str, year_filter))}")
-st.sidebar.markdown(f"**Temperature ≥:** {temp_filter} °C")
-
-# Summary statistics
-st.markdown("---")
-st.header("Summary Statistics")
-
-# Display summary statistics in a row
-col1, col2, col3 = st.columns(3)
-
-# Days in total
-with col1:
-    st.metric("Days in Total", df_selection["date"].nunique())
-
-# Average Temperature
-with col2:
-    st.metric("Average Temp °C", round(df_selection["TEMP"].mean(), 1))
-
-# Average Pressure
-with col3:
-    st.metric("Average Pressure", round(df_selection["PRES"].mean(), 2))
-
-# Menampilkan teks peringatan di kolom tengah
-st.warning("If PM2.5 levels: 50 is Dangerous")
-st.warning("If PM10  levels: 60 is Dangerous")
-st.warning("If CO    levels: 700 is Dangerous")
-
-# Line charts
-st.markdown("---")
-st.header("Air Quality Trends Over Years")
-
-# PM2.5 Line Chart
-fig_pm25 = px.line(
-    df_selection.groupby(['year', 'station'])[['PM2.5']].mean().reset_index(),
-    x="year", y="PM2.5", color="station",
-    markers=True, title='Average PM2.5 Particles'
-).update_layout(xaxis_title="Year", yaxis_title="PM2.5 (μg/m³)")
-
-# PM10 Line Chart
-fig_pm10 = px.line(
-    df_selection.groupby(['year', 'station'])[['PM10']].mean().reset_index(),
-    x="year", y="PM10", color="station",
-    markers=True, title='Average PM10 Particles'
-).update_layout(xaxis_title="Year", yaxis_title="PM10 (μg/m³)")
-
-# Display line charts in two columns
-col4, col5 = st.columns(2)
-
-with col4:
-    st.plotly_chart(fig_pm25, use_container_width=True)
-
-with col5:
-    st.plotly_chart(fig_pm10, use_container_width=True)
-
-# Bar charts
-st.markdown("---")
-st.header("Other Air Quality Metrics")
-
-# CO Line Chart
-fig_co = px.line(
-    df_selection.groupby(['year', 'station'])[['CO']].mean().reset_index(),
-    x="year", y="CO", color="station",
-    markers=True, title='Average CO (Carbon Monoxide)'
-).update_layout(xaxis_title="Year", yaxis_title="Carbon Monoxide (μg/m³)")
-
-# O3 Bar Chart
-fig_o3 = px.bar(
-    df_selection.groupby(['year', 'station'])[['O3']].mean().reset_index(),
-    x='year', y='O3', color="station",
-    title='Average O3 (Ozon)'
-).update_layout(xaxis_title="Year", yaxis_title="Ozon (DU)", width=520)
-
-# Display line and bar charts in two columns
-col6, col7 = st.columns(2)
-
-with col6:
-    st.plotly_chart(fig_co, use_container_width=True)
-
-with col7:
-    st.plotly_chart(fig_o3, use_container_width=True)
-
-# Additional information
-st.markdown("---")
-st.header("Air Quality Information")
-
-# Information about air quality
-st.markdown(
-    """
-    The higher values of PM2.5, PM10, CO, and O3 indicate worse air quality.
-    """
+temp_filter = st.sidebar.slider(
+    "Temperature °C:",
+    min_value=df["TEMP"].min(),  
+    max_value=df["TEMP"].max(), 
 )
 
-# Image
-image_url = 'https://www.ankitparakh.com/wp-content/uploads/2021/12/HEALTH-EFFECTS-OF-AIR-POLLUTION-WEB.jpg'
+df_selection = df.query(
+    "station == @st_filter & year == @year_filter & TEMP >= @temp_filter"
+)
+
+# ----- MAINPAGE -----
+st.title(":bar_chart: Air Quality Dashboard")
+st.markdown("##")
+
+day_count = df_selection["date"].nunique()
+average_temp = round(df_selection["TEMP"].mean(), 1)
+average_pres = round(df_selection["PRES"].mean(), 2)
+
+left_column, mid_column, mid2_column, right_column = st.columns(4)
+with left_column:
+    st.subheader("Days in Total:")
+    st.subheader(day_count)
+with mid_column:
+    st.subheader("Average Temp °C:")
+    st.subheader(average_temp)
+with mid2_column:
+    st.subheader("Average Pressure:")
+    st.subheader(average_pres)
+with right_column:
+    st.subheader("PM2.5/PM10/CO:")
+    st.subheader("50/60/700⚠️")
+
+st.markdown("---")
+
+# ----- CHART -----
+grouped = df_selection.groupby(['year', 'station'])[['PM2.5', 'PM10', 'CO','O3']].mean().reset_index()
+fig = px.line(grouped, x="year", y="PM2.5", color="station", markers=True, title='Average PM2.5 Particles').update_layout(xaxis_title="Year", yaxis_title="PM2.5 (μg/m³)")
+#st.plotly_chart(fig)
+
+fig2 = px.line(grouped, x="year", y="PM10", color="station", markers=True, title='Average PM10 Particles').update_layout(xaxis_title="Year", yaxis_title="PM10 (μg/m³)")
+
+left_column, right_column = st.columns(2)
+left_column.plotly_chart(fig, use_container_width=True)
+right_column.plotly_chart(fig2, use_container_width=True)
+
+fig3 = px.line(grouped, x="year", y="CO", color="station", markers=True, title='Average CO (Carbon Monoxide)').update_layout(xaxis_title="Year", yaxis_title="Carbon Monoxide (μg/m³)")
+#st.plotly_chart(fig3)
+
+fig4 = px.bar(grouped, x='year', y='O3', color="station", title='Average O3 (Ozon)').update_layout(xaxis_title="Year", yaxis_title="Ozon (DU)", width=520)
+
+# image_url = 'https://www.howardluksmd.com/wp-content/uploads/2021/11/AQi-PM-2.5-levels-health-effects.jpeg'
+
+left_column, right_column = st.columns(2)
+left_column.plotly_chart(fig3, use_container_width=True)
+right_column.plotly_chart(fig4, use_column_width=True)
+
+st.write(
+    """
+    <div style='text-align:center;'>
+        <h5>The higher values of PM2.5, PM10, CO, and O3, the worse air quality.</h5>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.image(image_url, use_column_width=True)
 
-# Hide Streamlit style
+# ----- HIDE STREAMLIT STYLE -----
 hide_st_style = """
                 <style>
                 #MainMenu {visibility: hidden;}
